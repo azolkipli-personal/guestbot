@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏠 Homestay Chatbot — Wireframes (Guest WhatsApp + Owner Portal)</title>
+<style>
+  :root {
+    --bg: #0f1923;
+    --surface: #162230;
+    --surface2: #1c2d3f;
+    --border: #2a3f52;
+    --wa-green: #25D366;
+    --wa-dark: #075e54;
+    --accent: #00bcd4;
+    --text: #e0e6ed;
+    --text-dim: #8899aa;
+    --text-bright: #ffffff;
+    --code-bg: #0d1b26;
+    --msg-in: #1c2d3f;
+    --msg-out: #054d44;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+  .hero {
+    background: linear-gradient(135deg, #075e54 0%, #128c7e 50%, #25D366 100%);
+    padding: 40px 24px;
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .hero p {
+    color: rgba(255,255,255,0.9);
+    margin-top: 8px;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 20px;
+  }
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 40px 0 20px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--wa-green);
+    margin: 24px 0 12px;
+  }
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 32px 0 16px;
+  }
+  .section-label .emoji { font-size: 1.5rem; }
+  .section-label h2 { margin: 0; border: none; }
+
+  /* ====== WIREFRAME GRID ====== */
+  .wireframe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  .wireframe-grid.two-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* ====== PHONE MOCKUP ====== */
+  .phone-mock {
+    background: #111;
+    border-radius: 36px;
+    border: 3px solid #333;
+    padding: 12px;
+    max-width: 340px;
+    margin: 0 auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .phone-inner {
+    background: #0a0a0a;
+    border-radius: 24px;
+    overflow: hidden;
+  }
+  .phone-top {
+    background: var(--wa-dark);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #1a6b5e;
+  }
+  .phone-top .back { color: #fff; font-size: 1.2rem; font-weight: 300; }
+  .phone-top .avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #128c7e, #25D366);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 700; color: #fff;
+  }
+  .phone-top .name { color: #fff; font-weight: 600; font-size: 0.9rem; }
+  .phone-top .status { color: rgba(255,255,255,0.6); font-size: 0.7rem; }
+  .phone-top .spacer { flex: 1; }
+  .phone-top .icon { color: rgba(255,255,255,0.8); font-size: 1rem; }
+
+  .chat-area {
+    background: #0d1b1a;
+    padding: 12px;
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .msg { max-width: 80%; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; line-height: 1.4; position: relative; }
+  .msg.in {
+    background: var(--msg-in);
+    color: var(--text);
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+  }
+  .msg.out {
+    background: var(--msg-out);
+    color: var(--text-bright);
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+  }
+  .msg .time {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    text-align: right;
+    margin-top: 4px;
+  }
+  .msg .typing {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .msg .typing span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    animation: bounce 1.4s infinite ease-in-out;
+  }
+  .msg .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .msg .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+  .msg .link-btn {
+    display: inline-block;
+    background: var(--wa-green);
+    color: #000;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    text-decoration: none;
+  }
+  .msg .link-btn.small { font-size: 0.7rem; padding: 4px 10px; }
+  .msg .badge-handover {
+    display: inline-block;
+    background: #ff9800;
+    color: #000;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    margin-top: 4px;
+  }
+  .msg .handover-msg {
+    font-style: italic;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+  }
+  .msg-outline {
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 0 12px 12px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .msg-outline .attach { font-size: 1.2rem; }
+  .msg-outline .mic { margin-left: auto; font-size: 1.2rem; }
+
+  /* ====== PORTAL MOCKUP ====== */
+  .portal-frame {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .portal-topbar {
+    background: var(--surface2);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .portal-topbar .brand {
+    font-weight: 700;
+    color: var(--wa-green);
+    font-size: 0.85rem;
+  }
+  .portal-topbar .nav-item {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: default;
+  }
+  .portal-topbar .nav-item.active {
+    background: rgba(37, 211, 102, 0.15);
+    color: var(--wa-green);
+  }
+  .portal-topbar .spacer { flex: 1; }
+  .portal-topbar .status-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+  }
+  .portal-topbar .status-dot.online { background: #4caf50; }
+  .portal-topbar .user-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #128c7e, #25D366);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700; color: #fff;
+  }
+
+  /* Split layout */
+  .portal-split {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 420px;
+  }
+  .portal-sidebar {
+    background: var(--surface2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+  }
+  .sidebar-search {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-search input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: var(--text);
+    font-size: 0.75rem;
+    outline: none;
+  }
+  .sidebar-search input::placeholder { color: var(--text-dim); }
+  .convo-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(42, 63, 82, 0.5);
+    cursor: default;
+  }
+  .convo-item.active {
+    background: rgba(37, 211, 102, 0.1);
+    border-left: 3px solid var(--wa-green);
+  }
+  .convo-item.handover {
+    background: rgba(255, 152, 0, 0.08);
+    border-left: 3px solid #ff9800;
+  }
+  .convo-item .row1 {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .convo-item .name { font-weight: 600; font-size: 0.8rem; }
+  .convo-item .time { font-size: 0.65rem; color: var(--text-dim); }
+  .convo-item .preview {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .convo-item .badge {
+    display: inline-block;
+    background: #ff9800;
+    color: #000;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-right: 4px;
+  }
+  .convo-item .unread {
+    background: var(--wa-green);
+    color: #000;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+
+  .portal-chat {
+    display: flex;
+    flex-direction: column;
+  }
+  .portal-chat-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+  }
+  .portal-chat-header .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #333;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.8rem; color: var(--text-bright);
+  }
+  .portal-chat-header .info { flex: 1; }
+  .portal-chat-header .name { font-weight: 600; font-size: 0.85rem; }
+  .portal-chat-header .status { font-size: 0.7rem; color: var(--text-dim); }
+  .portal-chat-header .actions { display: flex; gap: 6px; }
+  .portal-chat-header .actions button {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: var(--text);
+    font-size: 0.7rem;
+    cursor: default;
+  }
+  .portal-chat-header .actions .handover-btn {
+    background: rgba(255, 152, 0, 0.2);
+    border-color: #ff9800;
+    color: #ffb74d;
+  }
+
+  .portal-messages {
+    flex: 1;
+    padding: 12px;
+    background: #0a1218;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 300px;
+  }
+  .portal-msg {
+    max-width: 75%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+  .portal-msg.in {
+    background: var(--surface2);
+    color: var(--text);
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+  }
+  .portal-msg.out {
+    background: #054d44;
+    color: var(--text-bright);
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+  }
+  .portal-msg .meta { font-size: 0.6rem; color: var(--text-dim); margin-top: 3px; }
+  .portal-msg .handover-tag {
+    display: inline-block;
+    background: #ff9800;
+    color: #000;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-right: 4px;
+  }
+
+  .portal-input {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    gap: 8px;
+  }
+  .portal-input input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 8px 14px;
+    color: var(--text);
+    font-size: 0.8rem;
+    outline: none;
+  }
+  .portal-input input:disabled {
+    opacity: 0.5;
+    font-style: italic;
+  }
+  .portal-input .send {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--wa-green);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    cursor: default;
+  }
+  .portal-input .send.disabled { opacity: 0.4; }
+
+  /* ====== SETTINGS PANEL ====== */
+  .settings-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .settings-section h4 {
+    color: var(--accent);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(42, 63, 82, 0.3);
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row label { font-size: 0.85rem; }
+  .settings-row .value { font-size: 0.8rem; color: var(--text-dim); }
+  .settings-row .toggle {
+    width: 36px; height: 20px;
+    border-radius: 10px;
+    background: var(--border);
+    position: relative;
+    cursor: default;
+  }
+  .settings-row .toggle.on { background: var(--wa-green); }
+  .settings-row .toggle::after {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    top: 2px;
+    transition: left 0.2s;
+  }
+  .settings-row .toggle.on::after { left: 18px; }
+  .settings-row .toggle.off::after { left: 2px; }
+  .settings-row .edit-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 10px;
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    cursor: default;
+  }
+  .kb-editor {
+    width: 100%;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    min-height: 200px;
+    resize: vertical;
+  }
+
+  /* ====== ANNOTATIONS ====== */
+  .annotation {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.85rem;
+  }
+  .annotation strong { color: var(--accent); }
+
+  /* ====== FLOW DIAGRAM ====== */
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 20px;
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .flow-node {
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    min-width: 80px;
+  }
+  .flow-node.guest { border-color: #4fc3f7; }
+  .flow-node.ai { border-color: var(--wa-green); }
+  .flow-node.owner { border-color: #ffb74d; }
+  .flow-arrow { font-size: 1rem; color: var(--text-dim); }
+  .flow-label { font-size: 0.6rem; color: var(--text-dim); text-align: center; }
+
+  @media (max-width: 768px) {
+    .wireframe-grid.two-col { grid-template-columns: 1fr; }
+    .portal-split { grid-template-columns: 1fr; }
+    .portal-sidebar { display: none; }
+    .hero h1 { font-size: 1.4rem; }
+    .container { padding: 20px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>📱 WhatsApp AI Guest Assistant — Wireframes</h1>
+  <p>Guest experience on WhatsApp ↔ Owner web portal for chat management + settings</p>
+</div>
+
+<div class="container">
+
+<!-- ########## SECTION 1: GUEST EXPERIENCE ########## -->
+<div class="section-label">
+  <span class="emoji">👤</span>
+  <h2>Guest Experience (WhatsApp)</h2>
+</div>
+
+<p style="margin-bottom:20px;">Three scenarios showing how the conversation flows on the guest's phone. The bot auto-detects language and responds from the KB.</p>
+
+<div class="wireframe-grid three-across" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+
+  <!-- SCENARIO A: FAQ -->
+  <div>
+    <h3 style="text-align:center; font-size:0.95rem;">🇬🇧 Scenario A: FAQ (English)</h3>
+    <div class="phone-mock">
+      <div class="phone-inner">
+        <div class="phone-top">
+          <span class="back">←</span>
+          <div class="avatar">HM</div>
+          <div><div class="name">Perlis Homestay</div><div class="status">Online</div></div>
+          <span class="spacer"></span>
+          <span class="icon">📞</span>
+        </div>
+        <div class="chat-area">
+          <div class="msg in">
+            Hi, what time is check-in?
+            <div class="time">2:15 PM</div>
+          </div>
+          <div class="msg in">
+            And do you have parking?
+            <div class="time">2:15 PM</div>
+          </div>
+          <div class="msg out">
+            <div class="typing"><span></span><span></span><span></span></div>
+            <div class="time">2:15 PM</div>
+          </div>
+          <div class="msg out">
+            👋 Great questions!<br><br>
+            🕐 <b>Check-in:</b> 2:00 PM<br>
+            🅿️ <b>Parking:</b> Yes, free parking for up to 2 cars<br><br>
+            Anything else I can help with?
+            <div class="time">2:16 PM</div>
+          </div>
+          <div class="msg in">
+            Perfect, thanks!
+            <div class="time">2:16 PM</div>
+          </div>
+          <div class="msg out">
+            You're welcome! Enjoy your stay 🙌
+            <div class="time">2:16 PM</div>
+          </div>
+          <div class="msg-outline">
+            <span class="attach">📎</span> Type a message...
+            <span class="mic">🎤</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotation">✅ AI answers from KB. Fast, natural, friendly.</div>
+  </div>
+
+  <!-- SCENARIO B: Booking -->
+  <div>
+    <h3 style="text-align:center; font-size:0.95rem;">🇲🇾 Skenario B: Booking (BM)</h3>
+    <div class="phone-mock">
+      <div class="phone-inner">
+        <div class="phone-top">
+          <span class="back">←</span>
+          <div class="avatar">HM</div>
+          <div><div class="name">Perlis Homestay</div><div class="status">Online</div></div>
+          <span class="spacer"></span>
+          <span class="icon">📞</span>
+        </div>
+        <div class="chat-area">
+          <div class="msg in">
+            Assalamualaikum, nak tanya harga homestay untuk hujung minggu?
+            <div class="time">8:30 PM</div>
+          </div>
+          <div class="msg out">
+            Waalaikumsalam! 😊<br><br>
+            🏠 Harga hujung minggu (Jumaat–Sabtu): <b>RM XXX/night</b><br><br>
+            Nak terus booking? Boleh klik link di bawah:
+            <div class="time">8:30 PM</div>
+          </div>
+          <div class="msg out">
+            <a class="link-btn">🏨 Booking.com</a>
+            <div class="time">8:31 PM</div>
+          </div>
+          <div class="msg out">
+            <a class="link-btn">🏡 Agoda</a>
+            <div class="time">8:31 PM</div>
+          </div>
+          <div class="msg in">
+            Terima kasih!
+            <div class="time">8:32 PM</div>
+          </div>
+          <div class="msg out">
+            Sama-sama! Ada apa-apa lagi boleh tanya saya 😊
+            <div class="time">8:32 PM</div>
+          </div>
+          <div class="msg-outline">
+            <span class="attach">📎</span> Type a message...
+            <span class="mic">🎤</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotation">✅ AI detects BM, replies in BM. Booking links sent as mobile-friendly buttons.</div>
+  </div>
+
+  <!-- SCENARIO C: Handover -->
+  <div>
+    <h3 style="text-align:center; font-size:0.95rem;">🇨🇳 场景 C: Handover (中文)</h3>
+    <div class="phone-mock">
+      <div class="phone-inner">
+        <div class="phone-top">
+          <span class="back">←</span>
+          <div class="avatar">HM</div>
+          <div><div class="name">Perlis Homestay</div><div class="status">Online</div></div>
+          <span class="spacer"></span>
+          <span class="icon">📞</span>
+        </div>
+        <div class="chat-area">
+          <div class="msg in">
+            你好，请问你们可以安排从机场接送到民宿吗？
+            <div class="time">10:05 AM</div>
+          </div>
+          <div class="msg out">
+            很好的问题！让我查一下...
+            <div class="time">10:05 AM</div>
+          </div>
+          <div class="msg out">
+            <span class="badge-handover">🤝 转接给房东</span>
+            <div class="handover-msg">对不起，我无法确认机场接送服务。我将为您联系房东，他会尽快回复您！</div>
+            <div class="time">10:06 AM</div>
+          </div>
+          <div class="msg in">
+            <span class="badge-handover" style="background: #666; font-size:0.55rem;">👑 房东已接手</span><br>
+            您好，我是屋主Ammar。关于机场接送，我们可以安排，收费RM50一趟。
+            <div class="time">10:08 AM</div>
+          </div>
+          <div class="msg in">
+            太好了，我要预订！
+            <div class="time">10:09 AM</div>
+          </div>
+          <!-- Owner's manual reply shown on guest side -->
+          <div class="msg out" style="background:#054d44;">
+            好的，请把您的航班信息发给我，我帮您安排 😊
+            <div class="time">10:09 AM</div>
+          </div>
+          <div class="msg-outline">
+            <span class="attach">📎</span> Type a message...
+            <span class="mic">🎤</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotation">⚠️ Question not in KB → bot says "connecting to host" → AI freezes → you take over manually. Guest sees YOUR replies seamlessly.</div>
+  </div>
+
+</div>
+
+<!-- ########## SECTION 2: OWNER PORTAL ########## -->
+<div class="section-label">
+  <span class="emoji">🖥️</span>
+  <h2>Owner Web Portal</h2>
+</div>
+
+<p style="margin-bottom:8px;">A web app running on your NUC (served via Flask + Tailscale). Accessible from any device on your tailnet. <strong>Two main tabs:</strong> Chat Inbox + Settings.</p>
+
+<!-- 2A. CHAT INBOX -->
+<h3>📥 Tab 1: Chat Inbox — Active Conversations</h3>
+<div class="annotation">
+  <strong>💡 Real-time chat view.</strong> Left sidebar shows all conversations. Handover conversations are highlighted in <span style="color:#ff9800;font-weight:600;">orange</span>. Active conversations show unread counts.
+  AI-auto-replied conversations show a <span style="color:#4caf50;font-weight:600;">🤖</span> tag.
+</div>
+
+<div class="portal-frame" style="margin-bottom:24px;">
+  <div class="portal-topbar">
+    <div class="brand">🏠 Perlis Homestay</div>
+    <div class="nav-item active">💬 Chats</div>
+    <div class="nav-item">📊 Analytics</div>
+    <div class="nav-item">⚙️ Settings</div>
+    <span class="spacer"></span>
+    <span style="font-size:0.75rem; color:var(--text-dim);">
+      <span class="status-dot online"></span> AI Online · 3 active chats
+    </span>
+    <div class="user-avatar">A</div>
+  </div>
+  <div class="portal-split">
+    <!-- Sidebar -->
+    <div class="portal-sidebar">
+      <div class="sidebar-search">
+        <input placeholder="🔍 Search guests...">
+      </div>
+
+      <div class="convo-item active">
+        <div class="row1">
+          <span class="name">🌸 Siti Aisyah</span>
+          <span class="time">2m ago</span>
+        </div>
+        <div class="preview">Ya, ada parking untuk 2 kereta...</div>
+      </div>
+
+      <div class="convo-item handover">
+        <div class="row1">
+          <span class="name">🇨🇳 <span class="badge">HANDOVER</span> Li Wei</span>
+          <span class="time">8m ago</span>
+        </div>
+        <div class="preview">Airport transfer? Nie shi... <span class="unread">2</span></div>
+      </div>
+
+      <div class="convo-item handover">
+        <div class="row1">
+          <span class="name">🇬🇧 <span class="badge">HANDOVER</span> John Smith</span>
+          <span class="time">15m ago</span>
+        </div>
+        <div class="preview">Can I bring my pet dog? <span class="unread">1</span></div>
+      </div>
+
+      <div class="convo-item">
+        <div class="row1">
+          <span class="name">🤖 Emily Chen</span>
+          <span class="time">34m ago</span>
+        </div>
+        <div class="preview">Check-in is at 2:00 PM. Would you like...</div>
+      </div>
+
+      <div class="convo-item">
+        <div class="row1">
+          <span class="name">🤖 Ahmad Faiz</span>
+          <span class="time">1h ago</span>
+        </div>
+        <div class="preview">Harga untuk 3 malam adalah RM...</div>
+      </div>
+
+      <div class="convo-item" style="opacity:0.5;">
+        <div class="row1">
+          <span class="name">🤖 Sarah Tan</span>
+          <span class="time">2h ago</span>
+        </div>
+        <div class="preview">Thanks for the info! ✅</div>
+      </div>
+    </div>
+
+    <!-- Main chat pane -->
+    <div class="portal-chat">
+      <div class="portal-chat-header">
+        <div class="avatar" style="background:linear-gradient(135deg, #e53935, #ff7043);">LW</div>
+        <div class="info">
+          <div class="name">🇨🇳 Li Wei <span style="font-size:0.65rem; background:#ff9800; color:#000; padding:1px 6px; border-radius:8px; margin-left:4px;">HANDOVER</span></div>
+          <div class="status"><span class="status-dot online"></span> AI paused · You're chatting</div>
+        </div>
+        <div class="actions">
+          <button class="handover-btn">📋 Resume AI</button>
+          <button>🔔 Mute</button>
+        </div>
+      </div>
+      <div class="portal-messages">
+        <div class="portal-msg in">
+          <span class="handover-tag">🤖 AUTO</span>
+          很好的问题！让我查一下...
+          <div class="meta">10:05 AM</div>
+        </div>
+        <div class="portal-msg in">
+          <span class="handover-tag" style="background:#ff9800;">🔄 HANDOVER</span>
+          对不起，我无法确认机场接送服务。我将为您联系房东。
+          <div class="meta">10:06 AM</div>
+        </div>
+        <div class="portal-msg out" style="background:#1a237e;">
+          <span class="handover-tag" style="background:#1a237e; color:#fff;">👑 YOU</span>
+          您好 Li Wei，我是屋主 Ammar。机场接送可以安排，单程 RM50。
+          <div class="meta">10:08 AM ✅ Read</div>
+        </div>
+        <div class="portal-msg in">
+          <span class="handover-tag" style="background:#1a237e; color:#fff;">👑 YOU</span>
+          太好了，我要预订！
+          <div class="meta">10:09 AM</div>
+        </div>
+        <div class="portal-msg out" style="background:#1a237e;">
+          <span class="handover-tag" style="background:#1a237e; color:#fff;">👑 YOU</span>
+          好的，请把您的航班信息发给我 😊
+          <div class="meta">10:09 AM ✅ Read</div>
+        </div>
+      </div>
+      <div class="portal-input">
+        <span>😊</span>
+        <input placeholder="Type your reply as the host... (AI is paused)">
+        <div class="send">➤</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2B. SETTINGS TAB -->
+<h3>⚙️ Tab 2: Settings & Knowledge Base</h3>
+<div class="annotation">
+  <strong>📝 Edit everything from one place.</strong> Change your KB, toggle AI auto-reply on/off, manage handover rules, and see analytics — all on the same NUC web app.
+</div>
+
+<div class="wireframe-grid two-col">
+
+  <!-- Left: Settings -->
+  <div>
+    <div class="settings-section">
+      <h4>🤖 AI Behavior</h4>
+      <div class="settings-row">
+        <label>AI Auto-Reply</label>
+        <div class="toggle on"></div>
+      </div>
+      <div class="settings-row">
+        <label>Multi-lingual Detection</label>
+        <div class="toggle on"></div>
+      </div>
+      <div class="settings-row">
+        <label>Booking Link Auto-Send</label>
+        <div class="toggle on"></div>
+      </div>
+      <div class="settings-row">
+        <label>Handover Detection Sensitivity</label>
+        <select style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:0.75rem;">
+          <option>Balanced (default)</option>
+          <option>Conservative (hand over more)</option>
+          <option>Liberal (let AI try first)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h4>🔔 Notifications</h4>
+      <div class="settings-row">
+        <label>Telegram Alert on Handover</label>
+        <div class="toggle on"></div>
+      </div>
+      <div class="settings-row">
+        <label>Notify on New Message (non-handover)</label>
+        <div class="toggle off"></div>
+      </div>
+      <div class="settings-row">
+        <label>Daily Summary (missed conversations)</label>
+        <div class="toggle on"></div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h4>📊 Quick Stats</h4>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:8px;">
+        <div style="background:var(--surface2); border-radius:8px; padding:10px; text-align:center;">
+          <div style="font-size:1.2rem; font-weight:700; color:var(--wa-green);">47</div>
+          <div style="font-size:0.7rem; color:var(--text-dim);">Total Conversations</div>
+        </div>
+        <div style="background:var(--surface2); border-radius:8px; padding:10px; text-align:center;">
+          <div style="font-size:1.2rem; font-weight:700; color:var(--wa-green);">91%</div>
+          <div style="font-size:0.7rem; color:var(--text-dim);">Resolved by AI</div>
+        </div>
+        <div style="background:var(--surface2); border-radius:8px; padding:10px; text-align:center;">
+          <div style="font-size:1.2rem; font-weight:700; color:#ff9800;">3</div>
+          <div style="font-size:0.7rem; color:var(--text-dim);">Handovers (today)</div>
+        </div>
+        <div style="background:var(--surface2); border-radius:8px; padding:10px; text-align:center;">
+          <div style="font-size:1.2rem; font-weight:700; color:var(--accent);">168</div>
+          <div style="font-size:0.7rem; color:var(--text-dim);">Messages (24h)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h4>📱 WhatsApp Integration</h4>
+      <div class="settings-row">
+        <label>Status</label>
+        <span style="color:#4caf50; font-size:0.8rem;">● Connected</span>
+      </div>
+      <div class="settings-row">
+        <label>Phone Number</label>
+        <span class="value">+601X XXX XXXX</span>
+      </div>
+      <div class="settings-row">
+        <label>Webhook URL</label>
+        <code style="font-size:0.65rem; max-width:180px; overflow:hidden; text-overflow:ellipsis;">https://fedora-nuc.../webhook/wa</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: KB Editor -->
+  <div>
+    <div class="settings-section">
+      <h4>📄 Knowledge Base Editor</h4>
+      <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:10px;">Edit your KB directly in the browser. Changes take effect immediately — no restart needed.</p>
+      <textarea class="kb-editor"># Perlis Homestay Knowledge Base
+
+## Rates
+- Weekday (Sun–Thu): RM 150/night
+- Weekend (Fri–Sat): RM 200/night
+- Peak season: RM 250/night
+
+## Amenities
+- WiFi: Yes, free fibre broadband
+- Parking: Free, up to 2 cars
+- Kitchen: Full kitchen (stove, fridge, microwave)
+
+## Check-in / Check-out
+- Check-in: 2:00 PM
+- Check-out: 12:00 PM
+- Early check-in available if no guest night before
+
+## House Rules
+- No smoking indoors
+- Quiet hours 10pm–7am
+- No shoes inside
+
+## Booking Links
+- Agoda: https://www.agoda.com/...
+- Booking.com: https://www.booking.com/...</textarea>
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button style="background:var(--wa-green); border:none; border-radius:6px; padding:6px 16px; color:#000; font-weight:600; font-size:0.8rem; cursor:default;">💾 Save Changes</button>
+        <button style="background:transparent; border:1px solid var(--border); border-radius:6px; padding:6px 16px; color:var(--text-dim); font-size:0.8rem; cursor:default;">↩ Reset to last save</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h4>🛠️ Handover Management</h4>
+      <div class="settings-row">
+        <label>Paused users (AI silent)</label>
+        <span class="value"><span style="color:#ff9800;">2</span> — Li Wei, John Smith</span>
+      </div>
+      <div class="settings-row">
+        <label>Active AI conversations</label>
+        <span class="value">3 — Siti, Emily, Ahmad</span>
+      </div>
+      <div class="settings-row">
+        <label>Auto-resume after</label>
+        <select style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:0.75rem;">
+          <option>Never (manual only)</option>
+          <option>1 hour of inactivity</option>
+          <option>6 hours</option>
+          <option>24 hours</option>
+        </select>
+      </div>
+      <div style="margin-top:12px; padding:10px; background:var(--surface2); border-radius:8px;">
+        <p style="font-size:0.75rem; color:var(--text-dim);">
+          💡 <strong>Telegram quick commands:</strong><br>
+          <code>/resume +60123456789</code> — Unpause a guest<br>
+          <code>/pause +60123456789</code> — Pause AI for a guest<br>
+          <code>/status</code> — Show handover summary
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ########## SECTION 3: SYSTEM FLOW ########## -->
+<div class="section-label">
+  <span class="emoji">⚡</span>
+  <h2>How It All Fits Together</h2>
+</div>
+
+<div class="flow-row">
+  <div class="flow-node guest">👤 Guest<br><small>WhatsApp</small></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-node ai">🤖 AI Bot<br><small>Flask + LLM</small></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-node guest">📱 Reply<br><small>WhatsApp</small></div>
+  <span class="flow-arrow">⇄</span>
+  <div class="flow-node ai" style="border-color:#ff9800;">🔄 Handover?<br><small>→ Telegram</small></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-node owner">👑 You<br><small>Web Portal</small></div>
+  <span class="flow-arrow">⇄</span>
+  <div class="flow-node guest">📱 Manual Chat<br><small>WhatsApp</small></div>
+</div>
+
+<div style="margin-top:8px; text-align:center; font-size:0.8rem; color:var(--text-dim);">
+  <span style="display:inline-block; margin:0 10px;">① Guest chats → AI responds from KB</span>
+  <span style="display:inline-block; margin:0 10px;">② If out of scope → Telegram alert → AI pauses</span>
+  <span style="display:inline-block; margin:0 10px;">③ You reply from portal or WhatsApp directly</span>
+</div>
+
+<!-- ########## SECTION 4: OWNER EXPERIENCE SUMMARY ########## -->
+<div class="section-label">
+  <span class="emoji">👑</span>
+  <h2>Owner Experience Summary</h2>
+</div>
+
+<div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+
+  <div class="feature-card" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;">
+    <div class="icon" style="font-size:1.8rem;margin-bottom:8px;">📱</div>
+    <h4 style="color:var(--accent);">Replying to Guests</h4>
+    <p>You have <strong>two options</strong>:</p>
+    <ol style="font-size:0.85rem;color:var(--text-dim);margin-top:8px;padding-left:16px;">
+      <li><strong>Web Portal</strong> — full chat UI on any browser</li>
+      <li><strong>WhatsApp directly</strong> — once AI pauses, you just reply on your own WhatsApp. The bot stops intercepting messages for that user.</li>
+    </ol>
+  </div>
+
+  <div class="feature-card" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;">
+    <div class="icon" style="font-size:1.8rem;margin-bottom:8px;">🔌</div>
+    <h4 style="color:var(--accent);">No Extra Apps Needed</h4>
+    <p>Every piece runs on your <strong>existing NUC</strong>:</p>
+    <ul style="font-size:0.85rem;color:var(--text-dim);margin-top:8px;padding-left:16px;">
+      <li>✅ Flask web app on NUC</li>
+      <li>✅ Tailscale Funnel → public webhook</li>
+      <li>✅ Telegram for urgent alerts</li>
+      <li>✅ Browser for portal (any device)</li>
+    </ul>
+  </div>
+
+  <div class="feature-card" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;">
+    <div class="icon" style="font-size:1.8rem;margin-bottom:8px;">🔄</div>
+    <h4 style="color:var(--accent);">Full Workflow</h4>
+    <ol style="font-size:0.85rem;color:var(--text-dim);margin-top:8px;padding-left:16px;">
+      <li>Guest messages → AI handles 90%+</li>
+      <li>Complex? → Telegram ping + AI pauses</li>
+      <li>Open portal / WhatsApp → reply manually</li>
+      <li>Done? → Click "Resume AI" → bot takes over again</li>
+    </ol>
+  </div>
+
+</div>
+
+</div>
+
+</body>
+</html>

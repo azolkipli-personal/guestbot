@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏠 Perlis Homestay — WhatsApp Guest Assistant | Hosted + WhatsApp-Only Owner Control</title>
+<style>
+  :root {
+    --bg: #0f1923;
+    --surface: #162230;
+    --surface2: #1c2d3f;
+    --border: #2a3f52;
+    --wa-green: #25D366;
+    --wa-dark: #075e54;
+    --accent: #00bcd4;
+    --text: #e0e6ed;
+    --text-dim: #8899aa;
+    --text-bright: #ffffff;
+    --code-bg: #0d1b26;
+    --shadow: rgba(0,0,0,0.5);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+  .hero {
+    background: linear-gradient(135deg, #075e54 0%, #128c7e 30%, #25D366 70%, #1da851 100%);
+    padding: 48px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 1;
+  }
+  .hero p {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.9);
+    margin-top: 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .hero .badge-row {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .badge {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px);
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #fff;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 20px;
+  }
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 40px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--wa-green);
+    margin: 28px 0 12px;
+  }
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin: 20px 0 8px;
+  }
+  p, li { color: var(--text); margin-bottom: 8px; }
+  ul, ol { padding-left: 24px; margin-bottom: 16px; }
+  li { margin-bottom: 4px; }
+
+  .callout {
+    border-left: 3px solid var(--wa-green);
+    background: var(--surface2);
+    padding: 14px 18px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+  }
+  .callout.warn { border-left-color: #ff9800; }
+  .callout.info { border-left-color: var(--accent); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .feature-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .feature-card .icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .feature-card h4 { color: var(--accent); margin: 0 0 8px; }
+  .feature-card p { font-size: 0.9rem; color: var(--text-dim); }
+
+  .flow-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 16px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    min-width: 600px;
+  }
+  .flow-node {
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+    min-width: 90px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .flow-node.guest { border-color: #4fc3f7; }
+  .flow-node.ai { border-color: var(--wa-green); }
+  .flow-node.owner { border-color: #ffb74d; }
+  .flow-node.cloud { border-color: var(--accent); }
+  .flow-arrow { font-size: 1rem; color: var(--text-dim); }
+
+  /* Phone mock */
+  .phone-mock {
+    background: #111;
+    border-radius: 36px;
+    border: 3px solid #333;
+    padding: 12px;
+    max-width: 320px;
+    margin: 0 auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .phone-inner {
+    background: #0a0a0a;
+    border-radius: 24px;
+    overflow: hidden;
+  }
+  .phone-top {
+    background: var(--wa-dark);
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #1a6b5e;
+  }
+  .phone-top .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #128c7e, #25D366);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.9rem; color: #fff;
+  }
+  .phone-top .name { color: #fff; font-weight: 600; font-size: 0.85rem; }
+  .phone-top .status { color: rgba(255,255,255,0.6); font-size: 0.65rem; }
+  .phone-top .spacer { flex: 1; }
+  .chat-area {
+    background: #0d1b1a;
+    padding: 10px;
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .msg {
+    max-width: 80%;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+  .msg.in {
+    background: var(--surface2);
+    color: var(--text);
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+  }
+  .msg.out {
+    background: #054d44;
+    color: var(--text-bright);
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+  }
+  .msg .time { font-size: 0.55rem; color: var(--text-dim); text-align: right; margin-top: 3px; }
+  .msg .link-btn {
+    display: inline-block;
+    background: var(--wa-green);
+    color: #000;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-top: 4px;
+    font-size: 0.7rem;
+  }
+  .msg .bot-tag {
+    font-size: 0.55rem;
+    display: inline-block;
+    background: rgba(37,211,102,0.2);
+    color: var(--wa-green);
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-bottom: 3px;
+  }
+  .msg .handover-tag {
+    display: inline-block;
+    background: #ff9800;
+    color: #000;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.55rem;
+    margin-bottom: 3px;
+  }
+
+  /* Phone mockups side by side */
+  .mockup-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .tech-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .tech-table th {
+    background: var(--surface2);
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    color: var(--accent);
+    border-bottom: 2px solid var(--wa-green);
+  }
+  .tech-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .tech-table tr:hover td { background: var(--surface2); }
+
+  code {
+    background: var(--code-bg);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    padding: 14px;
+    border-radius: 8px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  blockquote {
+    border-left: 3px solid var(--accent);
+    background: var(--surface2);
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.9rem;
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-left: 28px;
+    margin-bottom: 20px;
+    border-left: 2px solid var(--border);
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 4px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--wa-green);
+  }
+  .timeline-item .phase { font-weight: 700; color: var(--wa-green); }
+  .timeline-item .date { color: var(--text-dim); font-size: 0.85rem; }
+
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 1.5rem; }
+    .mockup-row { grid-template-columns: 1fr; }
+    .container { padding: 20px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🏠 Perlis Homestay — WhatsApp Guest Assistant</h1>
+  <p>Hosted on Render/Railway · EN + BM Multi-Lingual · All Owner Controls via WhatsApp</p>
+  <div class="badge-row">
+    <span class="badge">☁️ Hosted (no NUC)</span>
+    <span class="badge">🇬🇧🇲🇾 EN + BM</span>
+    <span class="badge">📱 Owner controls via WhatsApp</span>
+    <span class="badge">🤖 OpenAI / Gemini</span>
+    <span class="badge">💬 WhatsApp Business API</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- 1. Architecture Overview -->
+<h2>🏗️ 1. Architecture</h2>
+<div class="flow-diagram">
+  <div class="flow-row">
+    <div class="flow-node guest">👤 Guest<br><small>WhatsApp → Bot</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node cloud">☁️ Hosted Backend<br><small>Render / Railway</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node ai">🤖 LLM<br><small>OpenAI / Gemini</small></div>
+    <span class="flow-arrow">↓</span>
+    <div class="flow-node guest">📱 Reply to Guest</div>
+    <span class="flow-arrow">⇄</span>
+    <div class="flow-node owner" style="border-color:var(--wa-green);">👑 Owner<br><small>Same WhatsApp!</small></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-grid">
+    <div class="feature-card">
+      <div class="icon">☁️</div>
+      <h4>Hosted on Render / Railway</h4>
+      <p>Flask app runs on a cloud platform. Free tier available. No dependency on your NUC — works 24/7 even if your home internet is down.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📱</div>
+      <h4>All Controls via WhatsApp</h4>
+      <p>No web portal needed. You control everything by chatting to your own bot: pause/resume AI, check status, update KB — all from within WhatsApp.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🇬🇧🇲🇾</div>
+      <h4>English + Bahasa Malaysia</h4>
+      <p>Bot auto-detects guest's language and replies in the same language. No Mandarin — you can't manage what you can't read.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔄</div>
+      <h4>Full Handover via WhatsApp</h4>
+      <p>When AI can't answer → bot hands over to you on WhatsApp. AI pauses for that guest. You reply directly. Done? Tell the bot to resume.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Tech Stack -->
+<h2>🛠️ 2. Hosted Tech Stack</h2>
+<table class="tech-table">
+  <thead><tr><th>Component</th><th>Choice</th><th>Cost</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Backend</strong></td><td>Python Flask + Gunicorn</td><td>🆓 Open source</td></tr>
+    <tr><td><strong>Hosting</strong></td><td>Render (free tier: 750h/month, sleeps on inactivity) or Railway ($5/mo, always-on)</td><td><strong>$0–$5/mo</strong></td></tr>
+    <tr><td><strong>Database</strong></td><td>SQLite (free, included) <em>or</em> PostgreSQL (Render free tier, 1GB)</td><td>$0/mo</td></tr>
+    <tr><td><strong>AI / LLM</strong></td><td>OpenAI GPT-4o-mini or Google Gemini Flash</td><td><strong>~$0.30–$1/mo</strong></td></tr>
+    <tr><td><strong>Messaging</strong></td><td>Meta WhatsApp Cloud API (free tier: 1K conversations/mo)</td><td><strong>$0/mo</strong></td></tr>
+    <tr><td><strong>Owner Control</strong></td><td>Your own WhatsApp number — send commands to the bot</td><td>$0/mo</td></tr>
+    <tr><td><strong>Total</strong></td><td></td><td><strong>≈ $0.50–$6/mo</strong></td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <strong>💡 Render Free Tier:</strong> App sleeps after 15 min of inactivity. Wakes on first request (~5s delay). For a homestay, this is fine — occasional guest messages. If you want zero cold-start, Railway at $5/mo is rock solid.
+</div>
+
+<!-- 3. Guest Experience -->
+<h2>📱 3. Guest WhatsApp Experience</h2>
+
+<div class="mockup-row">
+  <!-- Guest A: FAQ -->
+  <div>
+    <h3 style="text-align:center;">🇬🇧 FAQ (English)</h3>
+    <div class="phone-mock">
+      <div class="phone-inner">
+        <div class="phone-top">
+          <div class="avatar">PH</div>
+          <div><div class="name">Perlis Homestay</div><div class="status">🟢 Online</div></div>
+          <span class="spacer"></span>
+        </div>
+        <div class="chat-area">
+          <div class="msg in">Hi, what time is check-in?<div class="time">2:15 PM</div></div>
+          <div class="msg out"><span class="bot-tag">🤖 AI</span>Hi! Check-in is at <b>2:00 PM</b>. Check-out is at <b>12:00 PM</b>. Anything else I can help with? 😊<div class="time">2:15 PM</div></div>
+          <div class="msg in">Do you have parking?<div class="time">2:16 PM</div></div>
+          <div class="msg out"><span class="bot-tag">🤖 AI</span>Yes, free parking is available for up to <b>2 cars</b>.<div class="time">2:16 PM</div></div>
+          <div class="msg-outline" style="border:1px dashed var(--border);border-radius:8px;padding:8px 12px;font-size:0.72rem;color:var(--text-dim);display:flex;align-items:center;gap:6px;margin-top:auto;">📎 Type a message...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guest B: Booking + Handover -->
+  <div>
+    <h3 style="text-align:center;">🇲🇾 Booking → Handover</h3>
+    <div class="phone-mock">
+      <div class="phone-inner">
+        <div class="phone-top">
+          <div class="avatar">PH</div>
+          <div><div class="name">Perlis Homestay</div><div class="status">🟢 Online</div></div>
+          <span class="spacer"></span>
+        </div>
+        <div class="chat-area">
+          <div class="msg in">Assalamualaikum, nak tanya harga homestay untuk hujung minggu?<div class="time">8:30 PM</div></div>
+          <div class="msg out"><span class="bot-tag">🤖 AI</span>Waalaikumsalam! 😊<br><br>Harga hujung minggu (Jumaat–Sabtu): <b>RM 200/malam</b><br><br>Nak booking? Klik link di bawah:<div class="time">8:30 PM</div></div>
+          <div class="msg out"><span class="link-btn">🏨 Booking.com</span><div class="time">8:31 PM</div></div>
+          <div class="msg out"><span class="link-btn">🏡 Agoda</span><div class="time">8:31 PM</div></div>
+          <div class="msg in">Boleh arrange transport dari airport?<div class="time">8:32 PM</div></div>
+          <div class="msg out"><span class="handover-tag">🤝 HANDOVER</span>Maaf, saya tak dapat confirm perkhidmatan pengangkutan. Saya akan sambungkan tuan/puan kepada tuan rumah sekarang.<div class="time">8:32 PM</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Owner WhatsApp Experience -->
+<h2>👑 4. Owner Experience — All via WhatsApp</h2>
+
+<div class="callout">
+  <strong>🔑 Key insight:</strong> You have TWO WhatsApp conversations going on:
+  <ol style="margin-top:8px;">
+    <li><strong>With Guests</strong> — the chatbot (same as everyone else sees)</li>
+    <li><strong>With Your Bot Admin</strong> — a private admin channel where you control everything</li>
+  </ol>
+  When a guest triggers a handover, the bot AI pauses and <strong>you just reply to the guest directly</strong> on your own WhatsApp. The bot stops intercepting messages for that person.
+</div>
+
+<div class="mockup-row">
+  <!-- Owner: Admin Chat -->
+  <div>
+    <h3 style="text-align:center;">📋 Admin Chat — Control Center</h3>
+    <div class="phone-mock">
+      <div class="phone-inner">
+        <div class="phone-top">
+          <div class="avatar" style="background:#ff9800;">⚙️</div>
+          <div><div class="name">Bot Admin</div><div class="status">🟢 Active</div></div>
+          <span class="spacer"></span>
+        </div>
+        <div class="chat-area">
+          <div class="msg out"><span class="bot-tag" style="background:#333;">YOU</span><b>/status</b><div class="time">9:00 AM</div></div>
+          <div class="msg in"><span class="bot-tag">📊 STATUS</span>AI Online ✅<br>Active guests: 3<br>Handovers pending: <b>1</b><br>• Siti (parking question) — let AI handle<br>• <span style="color:#ff9800;">⚠️ John Smith (airport transfer)</span><br>• Emily (rates) — let AI handle<br><br>Paused users: <b>1</b> — John Smith<div class="time">9:00 AM</div></div>
+
+          <div class="msg in" style="border-left:3px solid #ff9800; background:#2a1f10;"><span class="bot-tag" style="background:#ff9800;">🔔 HANDOVER</span><b>John Smith</b> asked: <i>"Can you arrange airport pickup?"</i><br><br>AI has paused for this guest.<br>Reply to John directly on WhatsApp to take over.<div class="time">8:32 AM</div></div>
+
+          <div class="msg out"><span class="bot-tag" style="background:#333;">YOU</span><b>/resume +60123456789</b><div class="time">9:05 AM</div></div>
+          <div class="msg in"><span class="bot-tag">✅ DONE</span>AI resumed for John Smith. Bot will auto-reply again.<div class="time">9:05 AM</div></div>
+
+          <div class="msg out"><span class="bot-tag" style="background:#333;">YOU</span><b>/pause +60123456789</b><div class="time">9:10 AM</div></div>
+          <div class="msg in"><span class="bot-tag">✅ DONE</span>AI paused for +60123456789. Messages will be forwarded to you only.<div class="time">9:10 AM</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Owner: Direct Guest Chat -->
+  <div>
+    <h3 style="text-align:center;">💬 Guest Chat — Manual Reply</h3>
+    <div class="phone-mock">
+      <div class="phone-inner">
+        <div class="phone-top">
+          <div class="avatar" style="background:linear-gradient(135deg,#e53935,#ff7043);">JS</div>
+          <div><div class="name">John Smith</div><div class="status">🟢 Online</div></div>
+          <span class="spacer"></span>
+        </div>
+        <div class="chat-area">
+          <div class="msg in">Hi, what's the check-out time?<div class="time">8:28 AM</div></div>
+          <div class="msg out"><span class="bot-tag">🤖 AI</span>Check-out is at <b>12:00 PM</b>.<div class="time">8:28 AM</div></div>
+          <div class="msg in">Can you arrange airport pickup?<div class="time">8:30 AM</div></div>
+          <div class="msg out"><span class="handover-tag">🤝 HANDOVER</span>I'm not sure about that — let me connect you to the host!<div class="time">8:30 AM</div></div>
+          <div class="msg" style="align-self:flex-start; font-size:0.7rem; color:var(--text-dim); font-style:italic; border:1px dashed var(--border); padding:6px 10px;">━━ ⏸️ AI paused ━━</div>
+          <div class="msg out" style="background:#1a237e;">
+            <span class="bot-tag" style="background:#1a237e; color:#fff;">👑 HOST</span>
+            Hi John! I'm Ammar, the host. Yes, I can arrange airport pickup. It's RM50 one way. Let me know your flight details!
+            <div class="time">8:33 AM</div>
+          </div>
+          <div class="msg in">Perfect, flight arrives at 2pm on Saturday.<div class="time">8:34 AM</div></div>
+          <div class="msg out" style="background:#1a237e;">
+            <span class="bot-tag" style="background:#1a237e; color:#fff;">👑 HOST</span>
+            Got it! I'll be there to pick you up. See you Saturday! 🚗
+            <div class="time">8:35 AM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. Owner Command Reference -->
+<h2>⌨️ 5. Admin Commands — Full Reference</h2>
+
+<div class="card">
+  <p>You send these commands to the <strong>Bot Admin WhatsApp number</strong> (separate from the guest-facing bot). All commands start with <code>/</code>.</p>
+
+  <table class="tech-table">
+    <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>/status</code></td><td>See active guests, handover queue, AI status, paused users</td></tr>
+      <tr><td><code>/pause [phone]</code></td><td>Manually pause AI for a specific guest (you take over)</td></tr>
+      <tr><td><code>/resume [phone]</code></td><td>Resume AI auto-replies for a guest after you're done</td></tr>
+      <tr><td><code>/history [phone]</code></td><td>Show recent conversation history with a guest</td></tr>
+      <tr><td><code>/list</code></td><td>List all recent conversations + their status</td></tr>
+      <tr><td><code>/ai off</code></td><td>Turn off ALL AI auto-replies (emergency brake)</td></tr>
+      <tr><td><code>/ai on</code></td><td>Turn AI back on</td></tr>
+      <tr><td><code>/viewkb</code></td><td>Bot sends you the current Knowledge Base as a text message</td></tr>
+      <tr><td><code>/updatekb</code></td><td>Bot replies asking for new KB content → you paste → bot saves it</td></tr>
+      <tr><td><code>/help</code></td><td>Show all available commands</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout" style="margin-top:16px;">
+    <strong>💡 Owner replies to guests directly on WhatsApp.</strong> When a guest triggers handover, the bot pauses. You just open your WhatsApp chat with that guest — the bot won't respond. You reply as the host. When done, send <code>/resume [phone]</code> to the admin bot and AI takes over again.
+  </div>
+</div>
+
+<!-- 6. Knowledge Base -->
+<h2>📄 6. Knowledge Base — Simple Markdown</h2>
+<div class="card">
+  <p>Your KB is stored in the cloud database. You can view and update it via WhatsApp commands. Example structure:</p>
+  <pre># Perlis Homestay Info
+
+## Rates
+Weekday (Sun-Thu): RM 150/night
+Weekend (Fri-Sat): RM 200/night
+Peak season: RM 250/night
+
+## Amenities
+WiFi: Yes, free fibre
+Parking: Free, 2 cars
+Kitchen: Full (stove, fridge, microwave)
+
+## Check-in / Check-out
+Check-in: 2:00 PM
+Check-out: 12:00 PM
+
+## House Rules
+No smoking indoors
+Quiet hours 10pm-7am
+No shoes inside
+
+## Booking Links
+Agoda: https://www.agoda.com/...
+Booking.com: https://www.booking.com/...</pre>
+  <div class="callout">
+    📱 <strong>To update:</strong> Send <code>/updatekb</code> to the admin bot → it asks for new content → paste the entire markdown → it's saved instantly.
+  </div>
+</div>
+
+<!-- 7. Handover Flow -->
+<h2>🔄 7. Handover Flow — Step by Step</h2>
+<div class="card">
+  <ol>
+    <li><strong>Guest asks something</strong> the AI can't answer from KB</li>
+    <li><strong>Bot replies:</strong> "I'm not sure — connecting you to the host" (in guest's language)</li>
+    <li><strong>Bot sets</strong> <code>handed_over = true</code> for that guest — AI stops responding</li>
+    <li><strong>You receive a Telegram/WhatsApp alert</strong> with guest name + question</li>
+    <li><strong>You reply directly</strong> on WhatsApp to the guest — your messages go through, AI stays silent</li>
+    <li><strong>When done, send</strong> <code>/resume [phone]</code> to the admin bot</li>
+    <li><strong>AI resumes</strong> — next guest message is handled by bot again</li>
+  </ol>
+  <div class="callout warn" style="margin-top:12px;">
+    ⚠️ <strong>You can also pause manually.</strong> If you see a guest conversation that needs a human touch, just <code>/pause [phone]</code> and jump in. No waiting for the bot to decide.
+  </div>
+</div>
+
+<!-- 8. Implementation Plan -->
+<h2>📅 8. Build Plan</h2>
+
+<div class="timeline-item">
+  <div class="phase">Phase 1 — Core App</div>
+  <div class="date">Day 1 | Flask app + KB + AI integration</div>
+  <ul>
+    <li>Flask app with webhook endpoints</li>
+    <li>OpenAI/Gemini integration with KB context prompt</li>
+    <li>Language detection (EN/BM), booking link injection</li>
+    <li>SQLite for conversation state</li>
+    <li>Testable via curl/Meta Webhook tester</li>
+  </ul>
+</div>
+
+<div class="timeline-item">
+  <div class="phase">Phase 2 — WhatsApp Connect</div>
+  <div class="date">Day 2 | WhatsApp Business API + deploy</div>
+  <ul>
+    <li>Create Meta Business account + WhatsApp app</li>
+    <li>Configure webhook → point to Render URL</li>
+    <li>Deploy on Render (connect GitHub repo)</li>
+    <li>Verify: send WhatsApp → bot replies</li>
+  </ul>
+</div>
+
+<div class="timeline-item">
+  <div class="phase">Phase 3 — Owner Admin</div>
+  <div class="date">Day 3 | Admin commands + handover</div>
+  <ul>
+    <li>Build admin command parser (<code>/status</code>, <code>/pause</code>, <code>/resume</code>, etc.)</li>
+    <li>Handover detection + pause logic</li>
+    <li>KB view/update via WhatsApp commands</li>
+    <li>Telegram notification for handover</li>
+    <li>Full flow test: handover → you reply → resume</li>
+  </ul>
+</div>
+
+<div class="timeline-item">
+  <div class="phase">Phase 4 — Polish + Launch</div>
+  <div class="date">Day 4 | Edge cases, monitoring, go live</div>
+  <ul>
+    <li>BM language testing throughout</li>
+    <li>Rate limiting, error handling</li>
+    <li>Logging + simple monitoring (uptime check)</li>
+    <li>Switch to Railway if cold-start bothers you</li>
+    <li>Go live! 🚀</li>
+  </ul>
+</div>
+
+<!-- 9. Why This Works -->
+<h2>✅ 9. Why This Approach</h2>
+<div class="card-grid">
+  <div class="feature-card">
+    <div class="icon">☁️</div>
+    <h4>Zero Dependence on NUC</h4>
+    <p>Hosted in the cloud. Works 24/7 even if your NUC sleeps, internet goes down, or you're on holiday in Malaysia.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">📱</div>
+    <h4>Everything from Your Phone</h4>
+    <p>No web portal, no dashboard, no laptop needed. Control the bot from WhatsApp. Reply to guests from WhatsApp.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">🇬🇧🇲🇾</div>
+    <h4>Two Languages, One Brain</h4>
+    <p>No Mandarin — you can't vet replies you can't read. EN + BM covers 99% of your guests in Perlis.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">💰</div>
+    <h4>Cheap as Free</h4>
+    <p>~$0–$5/mo hosting + ~$0.50/mo AI. For a homestay with occasional guests, this is practically free.</p>
+  </div>
+</div>
+
+<!-- 10. Sample Admin Chat -->
+<h2>💬 10. What Your Admin Chat Looks Like</h2>
+<div class="card" style="background: var(--code-bg);">
+  <pre style="margin:0; border:none; background:transparent; padding:0;">
+YOU: /status
+BOT: 📊 STATUS
+     AI: ✅ Online
+     Active conversations: 4
+     👤 Siti — AI replying (parking question)
+     ⚠️ John — HANDOVER PENDING (airport transfer)
+     👤 Emily — AI replying (rates)
+     👤 Ahmad — AI replying (check-in time)
+     Paused users: John Smith (+60123456789)
+
+YOU: /history +60123456789
+BOT: 📜 Conversation with John Smith (+60123456789):
+     8:28 AM John: "Can you arrange airport pickup?"
+     8:28 AM AI: "I'm not sure — connecting you to the host"
+     [AI paused]
+     8:33 AM You: "Hi John! Yes I can arrange that..."
+
+YOU: /resume +60123456789
+BOT: ✅ AI resumed for John Smith. Bot will auto-reply again.
+
+YOU: /list
+BOT: 📋 Recent Conversations:
+     • Siti (+6011...890) — AI active
+     • John (+6012...789) — Resumed ✅
+     • Emily (+6016...234) — AI active
+     • Li (+6017...456) — Resolved (handover completed)
+     • Ahmad (+6019...111) — AI active</pre>
+</div>
+
+</div>
+
+</body>
+</html>

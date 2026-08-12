@@ -1,0 +1,26 @@
+# Render blueprint — WhatsApp Guest Assistant (GuestBot).
+# Deploy a web service that serves the Flask app behind Gunicorn.
+# Env vars are marked sync:false so their values are set in the Render dashboard,
+# not committed to this file. Set PROPERTY_NAME to your property's name.
+services:
+  - type: web
+    name: whatsapp-guest-assistant
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app --timeout 120
+    healthCheckPath: /
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: OWNER_PHONE
+        sync: false
+      - key: VERIFY_TOKEN
+        sync: false
+      - key: APP_SECRET
+        sync: false
+      - key: PROPERTY_NAME
+        sync: false
