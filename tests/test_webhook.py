@@ -152,7 +152,11 @@ def test_post_guest_handover(monkeypatch, client, fake_send):
         json=_meta_payload(GUEST_PHONE, "Can I book a boat?"),
     )
     assert resp.status_code == 200
-    assert fake_send.calls == [(GUEST_PHONE, "let me connect you")]
+    # Guest gets the bot's reply, AND the owner is notified of the handover.
+    assert fake_send.calls == [
+        (GUEST_PHONE, "let me connect you"),
+        (OWNER_PHONE, "⚠️ A guest needs your help (out of scope).\n\nGuest: +60123456789\nThey asked: Can I book a boat?"),
+    ]
     # Handover marks the guest as paused so the host takes over manually.
     assert db.is_paused(GUEST_PHONE) is True
 

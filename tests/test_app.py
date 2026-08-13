@@ -20,7 +20,13 @@ def test_create_app_returns_flask_app(app):
 
 
 def test_health_route_mounted(app):
-    """'/' must be mounted in the URL map."""
+    """'/healthz' must be mounted in the URL map."""
+    rules = {rule.rule for rule in app.url_map.iter_rules()}
+    assert "/healthz" in rules
+
+
+def test_root_landing_mounted(app):
+    """The portal landing page is mounted at '/'."""
     rules = {rule.rule for rule in app.url_map.iter_rules()}
     assert "/" in rules
 
@@ -32,8 +38,8 @@ def test_webhook_route_mounted(app):
 
 
 def test_health_endpoint_returns_ok(app):
-    """GET / must return 200 with a JSON {'ok': true} payload."""
+    """GET /healthz must return 200 with a JSON {'ok': true} payload."""
     client = app.test_client()
-    resp = client.get("/")
+    resp = client.get("/healthz")
     assert resp.status_code == 200
     assert resp.get_json() == {"ok": True}

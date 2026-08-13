@@ -18,7 +18,7 @@ def create_app() -> Flask:
     app = Flask(__name__)
     app.config["JSON_SORT_KEYS"] = False
 
-    @app.get("/")
+    @app.get("/healthz")
     def health():
         """Health check for uptime monitors and deployment verification."""
         return jsonify({"ok": True}), 200
@@ -29,6 +29,15 @@ def create_app() -> Flask:
         from .webhook import webhook_bp
 
         app.register_blueprint(webhook_bp)
+    except ImportError:
+        pass
+
+    # Self-service web portal (onboarding + configuration) — powers the
+    # root landing page and tenant dashboard.
+    try:
+        from .portal import portal_bp
+
+        app.register_blueprint(portal_bp)
     except ImportError:
         pass
 

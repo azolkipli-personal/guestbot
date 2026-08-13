@@ -1,10 +1,10 @@
-"""Smoke test — the app boots and / serves {"ok": true}."""
+"""Smoke test — the app boots; /healthz serves {"ok": true}."""
 from app import create_app
 
 
 def test_health_route():
     client = create_app().test_client()
-    resp = client.get("/")
+    resp = client.get("/healthz")
     assert resp.status_code == 200
     assert resp.get_json() == {"ok": True}
 

@@ -15,21 +15,24 @@ _GRAPH_API_VERSION = "v21.0"
 _ENDPOINT = "https://graph.facebook.com/{version}/{phone_number_id}/messages"
 
 
-def send_whatsapp(to: str, text: str) -> bool:
+def send_whatsapp(to: str, text: str, *, phone_number_id: str | None = None, access_token: str | None = None) -> bool:
     """Send ``text`` to ``to`` over WhatsApp. Return True on HTTP 2xx.
 
-    Returns False (without raising) if the ``WHATSAPP_ACCESS_TOKEN`` or
-    ``WHATSAPP_PHONE_NUMBER_ID`` env vars are missing, on any non-2xx HTTP
-    status, or on a network error.
+    Uses the passed ``phone_number_id``/``access_token`` when provided (per-
+tenant), otherwise falls back to the ``WHATSAPP_ACCESS_TOKEN`` /
+    ``WHATSAPP_PHONE_NUMBER_ID`` env vars (legacy single-tenant mode).
+
+    Returns False (without raising) if no credentials are available, on any
+    non-2xx HTTP status, or on a network error.
     """
-    token = os.environ.get("WHATSAPP_ACCESS_TOKEN")
-    phone_number_id = os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
-    if not token or not phone_number_id:
+    token = access_token or os.environ.get("WHATSAPP_ACCESS_TOKEN")
+    pni = phone_number_id or os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
+    if not token or not pni:
         return False
 
     url = _ENDPOINT.format(
         version=_GRAPH_API_VERSION,
-        phone_number_id=phone_number_id,
+        phone_number_id=pni,
     )
     headers = {
         "Authorization": f"Bearer {token}",

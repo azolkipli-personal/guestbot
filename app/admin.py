@@ -65,11 +65,9 @@ def _help_text() -> str:
     )
 
 
-def _status_text() -> str:
-    ai = "ON" if db.ai_enabled() else "OFF"
-    paused = [
-        r["phone"] for r in db.list_all() if r["paused"]
-    ]
+def _status_text(tenant: dict | None = None) -> str:
+    ai = "ON" if db.ai_enabled(tenant) else "OFF"
+    paused = [r["phone"] for r in db.list_all(tenant) if r["paused"]]
     if not paused:
         return f"AI: {ai}\nPaused (0)"
     lines = [f"AI: {ai}\nPaused ({len(paused)}):"]
@@ -78,8 +76,8 @@ def _status_text() -> str:
     return "\n".join(lines)
 
 
-def _history_text(phone: str) -> str:
-    hist = db.history(phone)
+def _history_text(phone: str, tenant: dict | None = None) -> str:
+    hist = db.history(phone, tenant_id=tenant["id"] if tenant else None)
     if not hist:
         return f"No history for {phone}"
     lines = []
@@ -90,8 +88,8 @@ def _history_text(phone: str) -> str:
     return "\n".join(lines)
 
 
-def _list_text() -> str:
-    rows = db.list_all()
+def _list_text(tenant: dict | None = None) -> str:
+    rows = db.list_all(tenant)
     if not rows:
         return "No users yet"
     lines = []
@@ -101,13 +99,14 @@ def _list_text() -> str:
     return "\n".join(lines)
 
 
-def handle_admin(phone: str, text: str) -> str:
+def handle_admin(phone: str, text: str, tenant: dict | None = None) -> str:
     """Parse and execute an owner admin command, returning the reply string.
 
     ``phone`` is used as the key for the pending ``/updatekb`` state (not the
-    command argument). Unknown ``/`` commands get a short "unknown command"
-    reply with a ``/help`` hint. Callers are expected to gate on
-    ``is_admin_command`` before routing a message here.
+    command argument). Pass a ``tenant`` dict to scope KB/AI state to that
+    owner; ``None`` falls back to the legacy single-tenant store. Unknown
+    ``/`` commands get a short "unknown command" reply with a ``/help`` hint.
+    Expects the caller to gate on ``is_admin_command`` before routing here.
     """
     stripped = text.strip()
     # Split on whitespace; first token is the command word.
@@ -118,11 +117,11 @@ def handle_admin(phone: str, text: str) -> str:
     if cmd == "help":
         return _help_text()
     if cmd == "status":
-        return _status_text()
+        return _status_text(tenant)
     if cmd == "pause":
         if not arg:
             return "Usage: /pause <phone>"
-        db.pause(arg)
+        db.pause(arg, tenant["id"] if tenant else None)
         return f"Paused {arg}"
     if cmd == "resume":
         if not arg:
@@ -132,17 +131,17 @@ def handle_admin(phone: str, text: str) -> str:
     if cmd == "history":
         if not arg:
             return "Usage: /history <phone>"
-        return _history_text(arg)
+        return _history_text(arg, tenant)
     if cmd == "list":
-        return _list_text()
+        return _list_text(tenant)
     if cmd == "ai":
         if arg and arg.lower() in ("on", "off"):
             enabled = arg.lower() == "on"
-            db.set_ai(enabled)
+            db.set_ai(enabled, tenant)
             return "AI: ON" if enabled else "AI: OFF"
         return "Usage: /ai on|off"
     if cmd == "viewkb":
-        return db.get_kb()
+        return db.get_kb(tenant)
     if cmd == "updatekb":
         _set_kb_pending(phone)
         return "Please send the new Knowledge Base content:"
