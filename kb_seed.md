@@ -20,16 +20,16 @@ Arau House is a spacious, tastefully decorated holiday home in Arau, Perlis, Mal
 ## Address & Location
 
 - **Address:** Lorong 1 Taman Seri Mawar, 02600 Arau, Perlis, Malaysia
-- **Distance from Arau town centre:** 450 yd (~0.26 mi)
-- **Nearest train station:** Arau (0.8 mi)
+- **Distance from Arau town centre:** 410 m (~0.4 km)
+- **Nearest train station:** Arau (1.3 km)
 - **Airports:**
-  - Sultan Abdul Halim Airport (AOR): 22 mi
-  - Langkawi International Airport: 37 mi
-  - Hat Yai International Airport: 43 mi
+  - Sultan Abdul Halim Airport (AOR): 35 km
+  - Langkawi International Airport: 60 km
+  - Hat Yai International Airport: 69 km
 
 ### Getting around / nearby
 
-- Arau train station is about 0.8 mi away.
+- Arau train station is about 1.3 km away.
 - Supermarket, coffee shops, and many restaurants are a short walk or drive away.
 - Famed "Nat Pokok Getah" is about 2 km from the house.
 
@@ -41,21 +41,21 @@ Arau House is a spacious, tastefully decorated holiday home in Arau, Perlis, Mal
 
 ### Nearby attractions
 
-- Bukit Rekreasi Gua Gong: 4.3 mi
-- Dataran Keris: 6 mi
-- Dataran Dato Sheikh Ahmad: 6 mi
-- Taman Rekreasi Esplanade Pengkalan Asam: 6 mi
-- Dataran Rindu Alam: 7 mi
-- Gua Cenderawasih: 7 mi
-- Taman Rekreasi Tasik Melati (Melati Lake): 7 mi
-- Taman Rekreasi Sungai Jernih: 9 mi
-- Padang Sintetik Simpang Ampat: 9 mi
+- Bukit Rekreasi Gua Gong: 6.9 km
+- Dataran Keris: 9.7 km
+- Dataran Dato Sheikh Ahmad: 9.7 km
+- Taman Rekreasi Esplanade Pengkalan Asam: 9.7 km
+- Dataran Rindu Alam: 11 km
+- Gua Cenderawasih: 11 km
+- Taman Rekreasi Tasik Melati (Melati Lake): 11 km
+- Taman Rekreasi Sungai Jernih: 14 km
+- Padang Sintetik Simpang Ampat: 14 km
 
 ### Restaurants & cafes near the property
 
-- Restaurant ANA Muda: 350 yd
-- Warung Pokok Buluh: 1,000 yd
-- Fizz Mangkok Ayun: 1,000 yd
+- Restaurant ANA Muda: 320 m
+- Warung Pokok Buluh: 910 m
+- Fizz Mangkok Ayun: 910 m
 
 ---
 
