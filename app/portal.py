@@ -25,6 +25,7 @@ import secrets
 from flask import Blueprint, redirect, render_template_string, request, url_for
 
 from . import db
+from . import whatsapp as wa
 
 portal_bp = Blueprint("portal", __name__)
 
@@ -73,6 +74,34 @@ _DASHBOARD = """<!doctype html>
      <input type="hidden" name="tk" value="{{ tenant.verify_token }}">
      <button type="submit">{{ 'Turn OFF' if tenant.ai_enabled else 'Turn ON' }}</button>
    </form>
+ </div>
+
+ <div class="card">
+   <h2>Conversations</h2>
+   {% set guests = conversations %}
+   {% if guests %}
+     <table style="width:100%;border-collapse:collapse">
+       <thead><tr style="text-align:left;border-bottom:1px solid #ddd">
+         <th style="padding:.4rem">Guest</th>
+         <th style="padding:.4rem">Status</th>
+         <th style="padding:.4rem"></th>
+       </tr></thead>
+       <tbody>
+       {% for g in guests %}
+         <tr style="border-bottom:1px solid #eee">
+           <td style="padding:.4rem">{{ g.phone }}</td>
+           <td style="padding:.4rem">
+             {% if g.paused %}<span class="tag off">Needs attention</span>
+             {% else %}<span class="tag on">AI</span>{% endif %}
+           </td>
+           <td style="padding:.4rem"><a href="{{ url_for('portal.conversation', tk=tenant.verify_token, guest=g.phone) }}">Open →</a></td>
+         </tr>
+       {% endfor %}
+       </tbody>
+     </table>
+   {% else %}
+     <p class="muted">No guest conversations yet.</p>
+   {% endif %}
  </div>
 
  <p class="muted" style="margin-top:2rem">
@@ -153,7 +182,8 @@ def portal():
     tenant = db.tenant_by_token(token)
     if tenant is None:
         return "Invalid or expired link. Please re-enter your email to get a new one.", 401
-    return _render(_DASHBOARD, tenant=tenant)
+    guests = db.list_all(tenant)
+    return _render(_DASHBOARD, tenant=tenant, conversations=guests)
 
 
 @portal_bp.post("/portal/kb")
@@ -173,6 +203,104 @@ def toggle_ai():
         return "Unauthorized", 401
     db.set_ai(not db.ai_enabled(tenant), tenant)
     return redirect(url_for("portal.portal", tk=tenant["verify_token"]))
+
+
+_CONVERSATION = """<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conversation — {{ guest }}</title>
+<style>
+ body{font-family:system-ui,sans-serif;max-width:640px;margin:2rem auto;padding:0 1rem;color:#222}
+ .msg{border:1px solid #eee;border-radius:10px;padding:.6rem .9rem;margin:.5rem 0;max-width:80%}
+ .msg.user{background:#e7f3ff;margin-left:auto;text-align:right}
+ .msg.bot{background:#f1f1f1}
+ .msg .who{font-size:.72rem;color:#888;display:block;margin-bottom:.2rem}
+ input{flex:1;padding:.6rem;border:1px solid #ccc;border-radius:6px}
+ button{padding:.6rem 1.2rem;border:0;border-radius:6px;background:#075E54;color:#fff;font-weight:600;cursor:pointer;margin-left:.5rem}
+ .row{display:flex;margin-top:1rem}
+ .muted{color:#666;font-size:.85rem}
+ .tag{display:inline-block;padding:.15rem .6rem;border-radius:99px;font-size:.75rem;font-weight:700}
+ .tag.on{background:#d3f9d8;color:#1a7f37}.tag.off{background:#ffe3e3;color:#d1242f}
+</style></head><body>
+ <p class="muted"><a href="{{ url_for('portal.portal', tk=tenant.verify_token) }}">← Back to dashboard</a></p>
+ <h1>Guest {{ guest }}</h1>
+ <p>
+   {% if is_paused %}<span class="tag off">Needs attention</span>
+   {% else %}<span class="tag on">AI</span>{% endif %}
+   <form method="post" action="{{ url_for('portal.toggle_pause') }}" style="display:inline;margin-left:.6rem">
+     <input type="hidden" name="tk" value="{{ tenant.verify_token }}">
+     <input type="hidden" name="guest" value="{{ guest }}">
+     <button type="submit" style="padding:.3rem .8rem;font-size:.8rem">{{ 'Resume' if is_paused else 'Pause' }}</button>
+   </form>
+ </p>
+
+ {% for m in messages %}
+   <div class="msg {{ 'user' if m.role == 'user' else 'bot' }}">
+     <span class="who">{{ 'Guest' if m.role == 'user' else 'Bot' }} · {{ m.ts }}</span>
+     {{ m.body }}
+   </div>
+ {% endfor %}
+ {% if not messages %}
+   <p class="muted">No messages yet.</p>
+ {% endif %}
+
+ <form method="post" action="{{ url_for('portal.reply') }}" class="row">
+   <input type="hidden" name="tk" value="{{ tenant.verify_token }}">
+   <input type="hidden" name="guest" value="{{ guest }}">
+   <input type="text" name="message" placeholder="Type a reply to the guest…" required autofocus>
+   <button type="submit">Send</button>
+ </form>
+ <p class="muted">Your reply is sent to the guest from your bot's WhatsApp number.</p>
+</body></html>"""
+
+
+@portal_bp.get("/portal/conversation")
+def conversation():
+    tenant = _require_tenant()
+    if tenant is None:
+        return "Unauthorized", 401
+    guest = request.args.get("guest", "")
+    if not guest:
+        return redirect(url_for("portal.portal", tk=tenant["verify_token"]))
+    messages = db.history(guest, tenant_id=tenant["id"])
+    is_paused = db.is_paused(guest, tenant["id"])
+    return _render(_CONVERSATION, tenant=tenant, guest=guest, messages=messages, is_paused=is_paused)
+
+
+@portal_bp.post("/portal/reply")
+def reply():
+    """Send a web reply to a guest from the bot's number."""
+    tenant = _require_tenant()
+    if tenant is None:
+        return "Unauthorized", 401
+    guest = (request.form.get("guest") or "").strip()
+    message = (request.form.get("message") or "").strip()
+    if not guest or not message:
+        return redirect(url_for("portal.conversation", tk=tenant["verify_token"], guest=guest))
+    # Send from the bot's number (tenant creds), then log it.
+    pni = tenant.get("phone_number_id")
+    tok = tenant.get("access_token")
+    if not pni or not tok:
+        return "WhatsApp is not connected for this property yet.", 409
+    ok = wa.send_whatsapp(guest, message, phone_number_id=pni, access_token=tok)
+    if ok:
+        db.log_message(guest, "bot", message, tenant_id=tenant["id"])
+    return redirect(url_for("portal.conversation", tk=tenant["verify_token"], guest=guest))
+
+
+@portal_bp.post("/portal/toggle-pause")
+def toggle_pause():
+    """Pause or resume the AI for a specific guest from the portal."""
+    tenant = _require_tenant()
+    if tenant is None:
+        return "Unauthorized", 401
+    guest = (request.form.get("guest") or "").strip()
+    if not guest:
+        return redirect(url_for("portal.portal", tk=tenant["verify_token"]))
+    if db.is_paused(guest, tenant["id"]):
+        db.unpause(guest)
+    else:
+        db.pause(guest, tenant["id"])
+    return redirect(url_for("portal.conversation", tk=tenant["verify_token"], guest=guest))
 
 
 @portal_bp.get("/portal/logout")

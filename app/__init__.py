@@ -15,11 +15,12 @@ def create_app() -> Flask:
     """Application factory — build and configure the Flask app."""
     load_dotenv()
 
-    # Ensure the DB exists and seed the env-configured WhatsApp setup as a
-    # managed tenant (so the web portal can manage it).
+    # Seed the env-configured WhatsApp setup as a managed tenant (so the web
+    # portal can manage it). ``seed_tenant_from_env`` lazily initialises the
+    # DB (reusing an existing connection, e.g. a test ``:memory:`` key) rather
+    # than forcing the default path, so it never clobbers an open database.
     from . import db
 
-    db.init_db()
     db.seed_tenant_from_env()
 
     app = Flask(__name__)
