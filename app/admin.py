@@ -56,6 +56,7 @@ def _help_text() -> str:
         "/status\n"
         "/pause <phone>\n"
         "/resume <phone>\n"
+        "/reply <phone> <message>\n"
         "/history <phone>\n"
         "/list\n"
         "/ai on|off\n"

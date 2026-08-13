@@ -130,6 +130,29 @@ def _process_payload():
     return _handle_guest_message(phone, body, tenant)
 
 
+def _handle_reply_command(phone: str, body: str, tenant: dict | None = None):
+    """Handle the owner's ``/reply <guest> <message>`` relay command.
+
+    Injects a message from the owner to a guest, sent from the bot's number so
+    the thread stays in the bot's chat. Returns a status message for the owner.
+    """
+    parts = body.strip().split(maxsplit=2)
+    if len(parts) < 3:
+        usage = "Usage: /reply <guest-number> <your message>"
+        _send(phone, usage, tenant)
+        return "ok", 200
+    _, guest_phone, message = parts
+    guest_phone = guest_phone.lstrip("+")
+    ok = _send(guest_phone, message, tenant)
+    if ok:
+        db.log_message(guest_phone, "bot", message, tenant_id=tenant["id"] if tenant else None)
+        txt = f"✅ Sent to {guest_phone}"
+    else:
+        txt = f"⚠️ Could not send to {guest_phone}. Check the WhatsApp number."
+    _send(phone, txt, tenant)
+    return "ok", 200
+
+
 def _handle_admin_message(phone: str, body: str, tenant: dict | None = None):
     """Route an owner/admin message (or a pending-KB submission)."""
     if admin.expect_kb_update(phone) and not admin.is_admin_command(body):
@@ -140,6 +163,10 @@ def _handle_admin_message(phone: str, body: str, tenant: dict | None = None):
         _send(phone, KB_UPDATED_REPLY, tenant)
         db.log_message(phone, "bot", KB_UPDATED_REPLY, tenant_id=tenant["id"] if tenant else None)
         return "ok", 200
+
+    # Owner relay: /reply <guest> <message> sends from the bot's number.
+    if body.strip().lower().startswith("/reply"):
+        return _handle_reply_command(phone, body, tenant)
 
     reply = admin.handle_admin(phone, body, tenant)
     _send(phone, reply, tenant)
@@ -155,7 +182,9 @@ def _handle_guest_message(phone: str, body: str, tenant: dict | None = None):
 
     tenant_id = tenant["id"] if tenant else None
     if db.is_paused(phone, tenant_id):
-        # Host is already handling this guest manually — don't send anything.
+        # Host is handling this guest manually — forward the guest's message
+        # to the owner instead of letting the AI answer (two-way takeover).
+        _notify_host_guest_message(phone, body, tenant)
         return "ok", 200
 
     kb = db.get_kb(tenant)
@@ -201,3 +230,23 @@ def _notify_host_handover(guest_phone: str, question: str, tenant: dict | None =
         mail.notify_handover(tenant, guest_phone, question)
     except Exception as exc:  # noqa: BLE001
         print(f"[webhook] handover email failed: {exc!r}")
+
+
+def _notify_host_guest_message(guest_phone: str, message: str, tenant: dict | None = None):
+    """Forward a paused guest's new message to the owner.
+
+    Used during manual takeover: the AI is paused for this guest, so inbound
+    messages are relayed to the owner (who replies via ``/reply``). This keeps
+    the whole conversation in the bot's thread and out of the AI's hands.
+    """
+    owner_phone = (tenant or {}).get("owner_phone") or os.environ.get("OWNER_PHONE")
+    if not owner_phone:
+        return
+    text = (
+        f"📩 {guest_phone}: {message[:300]}\n\n"
+        f"Reply with: /reply {guest_phone} your-message"
+    )
+    try:
+        _send(owner_phone, text, tenant)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[webhook] guest-forward notification failed: {exc!r}")

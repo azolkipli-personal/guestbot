@@ -161,7 +161,9 @@ def test_post_guest_handover(monkeypatch, client, fake_send):
     assert db.is_paused(GUEST_PHONE) is True
 
 
-def test_post_paused_guest_sends_nothing(monkeypatch, client, fake_send):
+def test_post_paused_guest_forwards_to_owner(monkeypatch, client, fake_send):
+    """A paused guest's message is forwarded to the owner (two-way takeover),
+    and NOT answered by the AI."""
     _config(monkeypatch)
     monkeypatch.setattr(webhook.wa, "send_whatsapp", fake_send)
     monkeypatch.setattr(
@@ -180,7 +182,10 @@ def test_post_paused_guest_sends_nothing(monkeypatch, client, fake_send):
         json=_meta_payload(GUEST_PHONE, "Hello?"),
     )
     assert resp.status_code == 200
-    assert fake_send.calls == []  # nothing sent while paused
+    # The guest's message is relayed to the owner, not answered by the AI.
+    assert fake_send.calls == [
+        (OWNER_PHONE, "📩 +60123456789: Hello?\n\nReply with: /reply +60123456789 your-message")
+    ]
 
 
 def test_post_ai_off(monkeypatch, client, fake_send):
@@ -222,6 +227,36 @@ def test_post_owner_status_command(monkeypatch, client, fake_send):
     # The owner message + admin reply are logged.
     hist = db.history(OWNER_PHONE)
     assert any(row["body"] == "/status" for row in hist)
+
+
+def test_post_owner_reply_forwards_to_guest(monkeypatch, client, fake_send):
+    """Owner uses ``/reply <guest> <msg>`` to reply in the bot's thread."""
+    _config(monkeypatch)
+    monkeypatch.setattr(webhook.wa, "send_whatsapp", fake_send)
+
+    resp = client.post(
+        "/webhook",
+        json=_meta_payload(OWNER_PHONE, "/reply 60123456789 yes, we have space for you"),
+    )
+    assert resp.status_code == 200
+    # The message goes to the guest (from the bot's number) + a confirm to owner.
+    assert ("60123456789", "yes, we have space for you") in fake_send.calls
+    assert any(to == OWNER_PHONE and "✅ Sent" in text for to, text in fake_send.calls)
+
+
+def test_post_owner_reply_usage_error(monkeypatch, client, fake_send):
+    _config(monkeypatch)
+    monkeypatch.setattr(webhook.wa, "send_whatsapp", fake_send)
+
+    resp = client.post(
+        "/webhook",
+        json=_meta_payload(OWNER_PHONE, "/reply onlyonenumber"),
+    )
+    assert resp.status_code == 200
+    # Usage message returned to owner, nothing sent to a guest.
+    assert len(fake_send.calls) == 1
+    assert fake_send.calls[0][0] == OWNER_PHONE
+    assert "Usage: /reply" in fake_send.calls[0][1]
 
 
 def test_post_owner_updatekb_pending(monkeypatch, client, fake_send):
