@@ -15,6 +15,13 @@ def create_app() -> Flask:
     """Application factory — build and configure the Flask app."""
     load_dotenv()
 
+    # Ensure the DB exists and seed the env-configured WhatsApp setup as a
+    # managed tenant (so the web portal can manage it).
+    from . import db
+
+    db.init_db()
+    db.seed_tenant_from_env()
+
     app = Flask(__name__)
     app.config["JSON_SORT_KEYS"] = False
 

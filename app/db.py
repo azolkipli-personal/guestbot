@@ -296,6 +296,66 @@ def list_tenants() -> list[dict]:
     return [dict(r) for r in rows]
 
 
+def seed_tenant_from_env() -> dict | None:
+    """Create a tenant row from the environment's WhatsApp config, if needed.
+
+    Lets the legacy single-tenant env config (Arau House, ``WHATSAPP_PHONE_``
+    ``NUMBER_ID`` etc.) also appear as a tenant in the DB so the web portal
+    can manage it. Runs at app startup. No-op (returns the existing tenant) if
+    a row already owns that ``phone_number_id``.
+
+    Returns the tenant dict, or None if the env lacks the essentials.
+    """
+    pni = os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
+    token = os.environ.get("WHATSAPP_ACCESS_TOKEN")
+    if not pni or not token:
+        return None
+
+    existing = tenant_row(pni)
+    if existing:
+        return existing
+
+    # Read the KB from the seed file (matches kb_seed.md default).
+    kb = None
+    kb_path = os.environ.get("KB_PATH", _DEFAULT_KB_PATH)
+    try:
+        with open(kb_path, encoding="utf-8") as fh:
+            kb = fh.read()
+    except FileNotFoundError:
+        kb = None
+
+    # verify_token: reuse the env VERIFY_TOKEN so the existing Meta webhook
+    # handshake keeps working with this tenant row.
+    verify_token = os.environ.get("VERIFY_TOKEN")
+    if not verify_token:
+        verify_token = secrets.token_urlsafe(32)
+
+    name = os.environ.get("PROPERTY_NAME", "My Homestay")
+    conn = _ensure_ready()
+    # Use a unique verify token; if the env's collide with an existing row,
+    # fall back to a fresh one.
+    if tenant_by_token(verify_token) is not None:
+        verify_token = secrets.token_urlsafe(32)
+    cur = conn.execute(
+        """INSERT INTO tenants (
+            name, email, owner_phone, phone_number_id, access_token,
+            verify_token, kb, property_name, ai_enabled
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)""",
+        (
+            name,
+            os.environ.get("OWNER_EMAIL", ""),
+            os.environ.get("OWNER_PHONE"),
+            pni,
+            token,
+            verify_token,
+            kb,
+            name,
+        ),
+    )
+    conn.commit()
+    return tenant_by_token(verify_token)
+
+
 def delete_tenant(phone_number_id: str) -> None:
     conn = _ensure_ready()
     conn.execute("DELETE FROM tenants WHERE phone_number_id = ?", (phone_number_id,))
